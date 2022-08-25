@@ -187,7 +187,7 @@ def create_app(test_config=None):
     @app.route('/quizzes', methods=['POST'])
     def quizze():
         data = json.loads(request.data)
-
+        print(data)
         try:
             prev = data['previous_questions']
             cur_category = data['quiz_category']
@@ -197,12 +197,17 @@ def create_app(test_config=None):
             else:
                 pos_questions = Question.query.filter_by(category=str(category.id))
             pos_questions = [x for x in pos_questions]
+            selected = []
             for ques in pos_questions:
-                if ques.id in prev:
-                    pos_questions.remove(ques)
+                if ques.id not in prev:
+                    selected.append(ques)
 
-            question = random.choice(pos_questions)
+            if len(selected) == 0:
+                return jsonify({
+                    'question': None
+                })
 
+            question = random.choice(selected)
             return jsonify({
                 'question': question.format()
             })
@@ -257,4 +262,3 @@ def create_app(test_config=None):
         }), 500
 
     return app
-
